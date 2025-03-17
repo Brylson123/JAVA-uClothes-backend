@@ -14,8 +14,8 @@ public class AdminInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
 
-    @Value("${ADMIN_NAME}")
-    private String adminName;
+    @Value("${ADMIN_EMAIL}")
+    private String adminEmail;
 
     @Value("${ADMIN_PASSWORD}")
     private String adminPassword;
@@ -26,10 +26,10 @@ public class AdminInitializer implements CommandLineRunner {
     }
 
     public void run(String... args) {
-        if (this.userRepository.findByUsername(this.adminName) == null) {
+        if (this.userRepository.findByEmail(this.adminEmail) == null) {
             User admin = new User();
-            admin.setUsername(this.adminName);
             admin.setPassword(this.adminPassword);
+            admin.setEmail(this.adminEmail);
             admin.setRole(UserRole.ADMIN);
             this.userService.registerUser(admin);
             System.out.println("Admin user created.");

@@ -1,5 +1,6 @@
 package com.uClothes.uClothes.domain;
 
 public enum UserRole {
-    ADMIN
+    ADMIN,
+    USER
 }

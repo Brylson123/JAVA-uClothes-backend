@@ -9,12 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class UserLoginRequest {
-    private String username, password;
+    private String username, password, email;
     UserRole userRole;
-
-    public UserLoginRequest(String username, String password, UserRole userRole) {
-        this.username = username;
-        this.userRole = userRole;
-        this.password = password;
-    }
 }

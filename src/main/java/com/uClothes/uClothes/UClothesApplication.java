@@ -9,8 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class UClothesApplication {
 
     public static void main(String[] args) {
-
         String profile = System.getenv("SPRING_PROFILES_ACTIVE");
+
         if (profile == null || profile.equals("local")) {
             System.out.println("Running in local mode: loading .env file.");
             try {
@@ -19,8 +19,8 @@ public class UClothesApplication {
                 System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
                 System.setProperty("DB_URL", dotenv.get("DB_URL"));
                 System.setProperty("JWT_SECRET", dotenv.get("JWT_SECRET"));
-                System.setProperty("ADMIN_NAME", dotenv.get("ADMIN_NAME"));
                 System.setProperty("ADMIN_PASSWORD", dotenv.get("ADMIN_PASSWORD"));
+                System.setProperty("ADMIN_EMAIL", dotenv.get("ADMIN_EMAIL"));
                 System.setProperty("EMAIL_USERNAME", dotenv.get("EMAIL_USERNAME"));
                 System.setProperty("EMAIL_PASSWORD", dotenv.get("EMAIL_PASSWORD"));
                 System.setProperty("STRIPE_API_SECRET", dotenv.get("STRIPE_API_SECRET"));
@@ -36,7 +36,6 @@ public class UClothesApplication {
         } else {
             System.out.println("Running in production mode: environment variables are used.");
         }
-
         SpringApplication.run(UClothesApplication.class, args);
     }
 }

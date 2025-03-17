@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.UuidGenerator;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.UUID;
 
 @Entity
@@ -24,30 +24,36 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private ClothesOffer product;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "orders"})
+    private User user;
 
     private String customerFirstName;
     private String customerLastName;
-    private String customerEmail;
     private String customerPhoneNumber;
 
     private String addressStreet;
     private String addressCity;
     private String addressZipCode;
     private String addressParcelLockerNumber;
+
     @Column(unique = true, nullable = false)
     private String sessionId;
 
     private double totalPrice;
 
-    public Order(UUID id, ClothesOffer product, String customerFirstName, String customerLastName, String customerEmail,
-                 String customerPhoneNumber, String addressStreet, String addressCity,
-                 String addressZipCode, String addressParcelLockerNumber, double totalPrice) {
+    public Order(UUID id, ClothesOffer product, User user, String customerFirstName,
+                 String customerLastName, String customerPhoneNumber, String addressStreet,
+                 String addressCity, String addressZipCode, String addressParcelLockerNumber, double totalPrice) {
         this.id = id;
         this.product = product;
+        this.user = user;
         this.customerFirstName = customerFirstName;
         this.customerLastName = customerLastName;
-        this.customerEmail = customerEmail;
         this.customerPhoneNumber = customerPhoneNumber;
         this.addressStreet = addressStreet;
         this.addressCity = addressCity;

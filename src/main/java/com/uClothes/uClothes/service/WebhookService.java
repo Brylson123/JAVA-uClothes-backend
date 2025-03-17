@@ -4,8 +4,10 @@ import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
 import com.uClothes.uClothes.domain.ClothesOffer;
 import com.uClothes.uClothes.domain.Order;
+import com.uClothes.uClothes.domain.User;
 import com.uClothes.uClothes.repositories.ClothesOfferRepository;
 import com.uClothes.uClothes.repositories.OrderRepository;
+import com.uClothes.uClothes.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -17,13 +19,15 @@ public class WebhookService {
 
     private final OrderRepository orderRepository;
     private final ClothesOfferRepository clothesOfferRepository;
+    private final UserRepository userRepository;
     private final OrderService orderService;
 
     public WebhookService(OrderRepository orderRepository, ClothesOfferRepository clothesOfferRepository,
-                          OrderService orderService) {
+                          OrderService orderService, UserRepository userRepository) {
         this.orderRepository = orderRepository;
         this.clothesOfferRepository = clothesOfferRepository;
         this.orderService = orderService;
+        this.userRepository = userRepository;
     }
 
     public void handleStripeEvent(Event event) {
@@ -63,7 +67,12 @@ public class WebhookService {
             System.out.println("Product not found for ID: " + productId);
             return;
         }
-
+        Optional<User> optionalUser = userRepository.findOptionalByEmail(customerEmail);
+        if (optionalUser.isEmpty()) {
+            System.out.println("User not found for email: " + customerEmail);
+            return;
+        }
+        User user = optionalUser.get();
         ClothesOffer product = optionalProduct.get();
 
         product.setActive(false);
@@ -73,7 +82,7 @@ public class WebhookService {
         order.setId(UUID.randomUUID());
         order.setSessionId(session.getId());
         order.setProduct(product);
-        order.setCustomerEmail(customerEmail);
+        order.setUser(user);
         order.setCustomerFirstName(customerFirstName);
         order.setCustomerLastName(customerLastName);
         order.setAddressStreet(addressStreet);

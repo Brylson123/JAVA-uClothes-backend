@@ -1,12 +1,9 @@
 package com.uClothes.uClothes.domain;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.util.List;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -27,7 +24,9 @@ public class User {
     @UuidGenerator
     private UUID id;
 
-    private String username;
+
+    @Column(unique = true, nullable = false)
+    private String email;
 
     private String password;
 
@@ -36,11 +35,13 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders;
 
-    public User(String username, String password, UserRole role, String currentTokenId) {
-        this.username = username;
+    public User(String password, UserRole role, String currentTokenId, String email) {
         this.password = password;
         this.role = role;
         this.currentTokenId = currentTokenId;
+        this.email = email;
     }
 }

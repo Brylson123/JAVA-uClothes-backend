@@ -1,6 +1,7 @@
 package com.uClothes.uClothes.service;
 
 import com.uClothes.uClothes.domain.User;
+import com.uClothes.uClothes.domain.UserRole;
 import com.uClothes.uClothes.dto.ResponseUserDTO;
 import com.uClothes.uClothes.repositories.UserRepository;
 import com.uClothes.uClothes.security.UserLoginRequest;
@@ -24,15 +25,18 @@ public class UserService {
     }
 
     public ResponseUserDTO registerUser(User user) {
-        if (this.userRepository.findByUsername(user.getUsername()) != null)
-            return new ResponseUserDTO(false, "User with this username already exists.");
+        if (this.userRepository.findByEmail(user.getEmail()) != null)
+            return new ResponseUserDTO(false, "User with this email already exists.");
         user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+        if(user.getRole() == null){
+            user.setRole(UserRole.USER);
+        }
         this.userRepository.save(user);
         return new ResponseUserDTO(true, "User registered successfully.");
     }
 
     public ResponseUserDTO loginUser(UserLoginRequest loginRequest, HttpServletResponse response) {
-        User user = this.userRepository.findByUsername(loginRequest.getUsername());
+        User user = this.userRepository.findByEmail(loginRequest.getEmail());
         if (user != null && this.passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             String token = this.jwtUtil.generateToken(user);
             user.setCurrentTokenId(token);
@@ -40,31 +44,30 @@ public class UserService {
             ResponseCookie cookie = ResponseCookie.from("jwt", token)
                     .httpOnly(true)
                     .secure(true)
-                    .domain(".uclothes.pl")
                     .maxAge(3600).path("/")
+                    .domain(".uclothes.pl")
                     .sameSite("none").build();
             response.setHeader("Set-Cookie", cookie.toString());
-            return new ResponseUserDTO(true, user.getRole(), user.getUsername(), token);
+            return new ResponseUserDTO(true, user.getRole(), user.getEmail(), token);
         }
-        return new ResponseUserDTO(false, "Invalid username or password.");
+        return new ResponseUserDTO(false, "Invalid email or password.");
     }
 
-    public boolean isTokenValid(String token) {
-        User user = this.userRepository.findByCurrentTokenId(token);
-        return (user != null);
+    public User findUserByToken(String token) {
+        return this.userRepository.findByCurrentTokenId(token);
     }
 
     public ResponseUserDTO logoutUser(String username, HttpServletResponse response) {
         try {
-            User user = this.userRepository.findByUsername(username);
+            User user = this.userRepository.findByEmail(username);
             if (user != null) {
                 user.setCurrentTokenId(null);
                 this.userRepository.save(user);
                 String cookieValue = ResponseCookie.from("jwt", "")
                         .httpOnly(true)
                         .secure(true)
-                        .domain(".uclothes.pl")
                         .sameSite("none")
+                        .domain(".uclothes.pl")
                         .maxAge(0)
                         .path("/")
                         .build().toString();
@@ -78,9 +81,10 @@ public class UserService {
     }
 
     public ResponseUserDTO getUserByToken(String token) {
-        boolean findUser = isTokenValid(token);
-        if (!findUser)
-            return new ResponseUserDTO(false);
-        return new ResponseUserDTO(true);
+        User user = findUserByToken(token);
+        if (user == null) {
+            return new ResponseUserDTO(false, "Invalid token.");
+        }
+        return new ResponseUserDTO(true, user.getRole(), user.getEmail());
     }
 }

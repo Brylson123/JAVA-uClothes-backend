@@ -1,5 +1,6 @@
 package com.uClothes.uClothes.controller;
 
+import com.uClothes.uClothes.domain.User;
 import com.uClothes.uClothes.dto.ResponseUserDTO;
 import com.uClothes.uClothes.security.UserLoginRequest;
 import com.uClothes.uClothes.service.UserService;
@@ -17,12 +18,19 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/getUserByToken/{token}")
+    @GetMapping("/getUserByToken")
     @ResponseBody
-    public ResponseUserDTO getUserByToken(@PathVariable String token) {
+    public ResponseUserDTO getUserByToken(@CookieValue(name = "jwt", required = false) String token) {
+        if (token == null) {
+            return new ResponseUserDTO(false, "No token found.");
+        }
         return userService.getUserByToken(token);
     }
 
+    @PostMapping("/register")
+    public ResponseUserDTO registerUser(@RequestBody User registerRequest) {
+        return userService.registerUser(registerRequest);
+    }
     @PostMapping("/login")
     @ResponseBody
     public ResponseUserDTO loginUser(@RequestBody UserLoginRequest loginRequest, HttpServletResponse response) {
@@ -36,4 +44,5 @@ public class UserController {
         String username = request.getUserPrincipal().getName();
         return userService.logoutUser(username, response);
     }
+
 }
